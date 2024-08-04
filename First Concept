@@ -1,0 +1,67 @@
+from tkinter import *
+import random
+
+# Create the main window
+main_window = Tk()
+main_window.title("Julie's Party Hire")
+main_window.geometry("600x300")
+
+# Function to quit the application
+def end_program():
+    main_window.destroy()
+
+# Function to create and place labels
+def labels():
+    Label(main_window, text="Customer Name").grid(column=0, row=1, sticky=N)
+    Label(main_window, text="Item Hired").grid(column=0, row=3, sticky=N)
+    Label(main_window, text="Number of Items Hired").grid(column=0, row=5, sticky=N)
+
+# Function to print entry values on the GUI
+def print_entries():
+    Label(main_window, text="   Customer Name   ", font="bold").grid(column=0, row=10, sticky=N)
+    name_label.config(text=entry_name.get())
+    Label(main_window, text="   Receipt Number   ", font="bold").grid(column=1, row=10, sticky=N)
+    random_number = random.randint(1000, 9999)
+    Label(main_window, text=random_number, font="bold").grid(column=1, row=11, sticky=N)
+    Label(main_window, text="   Item Hired   ", font="bold").grid(column=2, row=10, sticky=N)
+    item_label.config(text=entry_item.get())
+    Label(main_window, text="   Number of Items Hired   ", font="bold").grid(column=3, row=10, sticky=N)
+    number_label.config(text=entry_item_number.get())
+
+# Main function to create entry widgets and run the main loop
+def main():
+    global entry_name, entry_receipt, entry_item, entry_item_number
+    global name_label, receipt_label, item_label, number_label
+
+    entry_name = Entry(main_window)
+    entry_name.grid(column=1, row=1, sticky=N)
+    
+    entry_item = Entry(main_window)
+    entry_item.grid(column=1, row=3, sticky=N)
+    
+    entry_item_number = Entry(main_window)
+    entry_item_number.grid(column=1, row=5, sticky=N)
+
+
+    # Create buttons
+    Button(main_window, text="Print Entries", command=print_entries).grid(column=0, row=9, sticky=N)
+    Button(main_window, text="Quit", command=end_program).grid(column=1, row=9, sticky=N)
+
+    # Create labels to display the printed entries
+    name_label = Label(main_window)
+    name_label.grid(column=0, row=11, sticky=N)
+    
+    receipt_label = Label(main_window)
+    receipt_label.grid(column=1, row=11, sticky=N)
+    
+    item_label = Label(main_window)
+    item_label.grid(column=2, row=11, sticky=N)
+    
+    number_label = Label(main_window)
+    number_label.grid(column=3, row=11, sticky=N)
+
+    main_window.mainloop()
+
+# Call the functions to set up the GUI
+labels()
+main()
