@@ -1,0 +1,218 @@
+from tkinter import *
+import tkinter as tk
+from tkinter import ttk
+import random
+import tkinter.font as tkFont
+from tkinter import messagebox
+
+ # Create the main window
+main_window = tk.Tk()
+main_window.title("Julie's Party Hire")
+main_window.columnconfigure(0, minsize=150)
+main_window.columnconfigure(1, minsize=150)
+main_window.columnconfigure(2, minsize=150)
+main_window.columnconfigure(3, minsize=150)
+
+
+def main():
+    global counters, customer_details
+    counters = {'total_entries':0,'name_count':0}
+    customer_details = []
+    
+    labels()
+    load_details()
+    print_entries()
+    entries()
+    buttons()
+    main_window.mainloop
+
+def entries():
+    global entry_name, item_hired, entry_item_number, row_delete, items
+    font = tkFont.Font(size=14)
+    entry_name = Entry(main_window, width=17, font=font, bd=2)
+    entry_name.grid(column=1, row=0, pady=15)
+
+    items = ['Balloons', 'Tables', 'Chairs', 'Lighting', 'Bouncy Castle', 'Speaker', 'Plates', 'Cutlery']
+    item_hired = ttk.Combobox(main_window, width=16, font=font, values=items)
+    item_hired.grid(column=1, row=1, pady=15)
+    
+    entry_item_number = Spinbox(main_window, width=17, font=font, bd=2, from_=0, to=500)
+    entry_item_number.grid(column=1, row=2, pady=15)
+
+    row_delete = Entry(main_window, width=17, font=font, bd=2)
+    row_delete.grid(column=3, row=2, pady=15)
+
+def buttons():
+    # Create buttons
+    Button(main_window, text="Save Details", command=validation, width=15, borderwidth=2).place(x=400, y=40)
+    Button(main_window, text="Print Entries", command=print_entries, width=15, borderwidth=2).place(x=520, y=40)
+    Button(main_window, text="Quit", command=close_program, width=15, borderwidth=2).place(x=520, y=15)
+    Button(main_window, text="Delete Row", command=delete_row_validation, width=15, borderwidth=2).place(x=520, y=90)
+ 
+def printed_labels():
+    global name_label, receipt_label, item_label, number_label
+    # Create labels to display the printed entries
+    name_label = Label(main_window)
+    name_label.grid(column=2, row=11, sticky=N)
+    
+    receipt_label = Label(main_window)
+    receipt_label.grid(column=3, row=11, sticky=N)
+    
+    item_label = Label(main_window)
+    item_label.grid(column=4, row=11, sticky=N)
+    
+    number_label = Label(main_window)
+    number_label.grid(column=5, row=11, sticky=N)
+
+# Function to create and place labels
+def labels():
+    Label(main_window, text="Customer Name:", font=("Times New Roman", 15)).grid(column=0, row=0, pady=15)
+    Label(main_window, text="Item Hired:", font=("Times New Roman", 15)).grid(column=0, row=1, pady=15)
+    Label(main_window, text="No. of Item Hired:", font=("Times New Roman", 15)).grid(column=0, row=2, pady=15)
+    Label(main_window, text="Row No. To Delete").grid(column=2, row=2, padx=(50,10))
+
+# Function to load data from the text file
+def load_details():
+    with open("model.txt", "r") as file:
+        while True:
+            name_txt = file.readline().strip()
+            if not name_txt:
+                break  # End of file reached
+            item_hired_txt = file.readline().strip()
+            random_number_txt = file.readline().strip()
+            entry_item_number_txt = file.readline().strip()
+
+            if item_hired_txt and random_number_txt and entry_item_number_txt:
+                customer_details.append([random_number_txt, name_txt, item_hired_txt, entry_item_number_txt])
+                counters['total_entries'] += 1
+
+def validation():
+    validation_counter = 0
+    
+    if entry_name.get() == "":
+        messagebox.showerror("Invalid Input", "Customer Name cannot be left blank")
+        validation_counter += 1
+
+    elif not entry_name.get().replace(" ","").replace("-", "").isalpha():
+        messagebox.showerror("Invalid Input", "Customer Name must be valid")
+        validation_counter += 1
+        
+    elif item_hired.get() == "":
+        messagebox.showerror("Invalid Input", "Item Hired cannot be left blank")
+        validation_counter += 1
+
+    elif not item_hired.get() in items:
+        messagebox.showerror("Invalid Input", "Item Hired must be selected from the list")
+        validation_counter += 1
+
+    elif entry_item_number.get() == "":
+        messagebox.showerror("Invalid Input", "No. of Items Hired cannot be left blank")
+        validation_counter += 1
+        
+    elif int(entry_item_number.get()) <= 0:
+        messagebox.showerror("Invalid Input", "No. of Items Hired must be greater than 0")
+        validation_counter += 1
+
+    elif int(entry_item_number.get()) > 500:
+        messagebox.showerror("Invalid Input", "No. of Items Hired must be less than or equal to 500")
+        validation_counter += 1
+    
+    if validation_counter == 0:
+        save_details()
+
+# Function to print entry values on the GUI
+def print_entries():
+    name_count = 0
+    Label(main_window, font=("Times New Roman", 15), text="Row").grid(column=0, row=4)
+    Label(main_window, font=("Times New Roman", 15), text="Receipt Number").grid(column=1, row=4)
+    Label(main_window, font=("Times New Roman", 15), text="Customer Name").grid(column=2, row=4)
+    Label(main_window, font=("Times New Roman", 15), text="Item Hired").grid(column=3, row=4)
+    Label(main_window, font=("Times New Roman", 15), text="No. of Item Hired").grid(column=4, row=4)
+    while name_count < counters['total_entries']:
+        Label(main_window, text=name_count).grid(column=0, row=name_count+5)
+        Label(main_window, text=(customer_details[name_count][0])).grid(column=1, row=name_count+5)
+        Label(main_window, text=(customer_details[name_count][1])).grid(column=2, row=name_count+5)
+        Label(main_window, text=(customer_details[name_count][2])).grid(column=3, row=name_count+5)
+        Label(main_window, text=(customer_details[name_count][3])).grid(column=4, row=name_count+5)
+        name_count += 1
+        counters['name_count'] = name_count
+
+def save_details():
+    global random_number
+    # Append each item to its own area of the list
+    random_number = random.randint(100000, 999999)
+    name_txt = entry_name.get()
+    item_hired_txt = item_hired.get()
+    random_number_txt = str(random_number)
+    entry_item_number_txt = str(entry_item_number.get())
+
+    with open("model.txt", "a") as file:
+        file.write(f"{name_txt}\n")
+        file.write(f"{item_hired_txt}\n")
+        file.write(f"{random_number_txt}\n")
+        file.write(f"{entry_item_number_txt}\n")
+
+    messagebox.showinfo("Details Saved", "Your detials were sucessfully saved")
+    
+    customer_details.append([random_number_txt, name_txt, item_hired_txt, entry_item_number_txt])
+
+    # Clear the boxes
+    entry_name.delete(0, 'end')
+    item_hired.delete(0, 'end')
+    entry_item_number.delete(0, 'end')
+    counters['total_entries'] += 1
+
+def delete_row_validation():
+    delete_row_validation_counter = 0
+    if row_delete.get() == "":
+        messagebox.showerror("Invalid Input", "Row No. to delete cannot be left blank")
+        delete_row_validation_counter += 1
+        
+    elif not row_delete.get().isdigit():
+        messagebox.showerror("Invalid Input", "Row No. to delete must be a digit")
+        delete_row_validation_counter += 1
+    
+    elif int(row_delete.get()) >= counters['total_entries']:
+        messagebox.showerror("Invalid Input", "Row No. to delete is out of range")
+        delete_row_validation_counter += 1
+
+    if delete_row_validation_counter == 0:
+        delete_row()
+
+
+def delete_row():
+    row_index = int(row_delete.get())  # Get the row number to delete
+    del customer_details[row_index]  # Delete the row from the list
+    counters['total_entries'] -= 1
+    row_delete.delete(0, 'end')
+
+    # Clear the GUI
+    Label(main_window, text=" " * 50).grid(column=0, row=row_index+5)
+    Label(main_window, text=" " * 50).grid(column=1, row=row_index+5)
+    Label(main_window, text=" " * 50).grid(column=2, row=row_index+5)
+    Label(main_window, text=" " * 50).grid(column=3, row=row_index+5)
+    Label(main_window, text=" " * 50).grid(column=4, row=row_index+5)
+
+    # Rewrite the file without the deleted entry
+    with open("model.txt", "w") as file:
+        for detail in customer_details:
+            file.write(f"{detail[1]}\n")  # name_txt
+            file.write(f"{detail[2]}\n")  # item_hired_txt
+            file.write(f"{detail[0]}\n")  # random_number_txt
+            file.write(f"{detail[3]}\n")  # entry_item_number_txt
+
+    # Reprint all the items in the list
+    print_entries()
+
+# Function to quit the application
+def close_program():
+    def end_program():
+        close_program_window.destroy()
+        main_window.destroy()
+    close_program_window = tk.Tk()
+    close_program_window.title("Quit Program")
+    Label(close_program_window, text="Are you sure you would like to end this program?").grid(column=0, row=0, padx=40, pady=(20,10))
+    Button(close_program_window, text="Yes", command=end_program, width=10, borderwidth=2).grid(column=0, row=1, padx=(0,100), pady=(0,20))
+    Button(close_program_window, text="No", command=close_program_window.destroy, width=10, borderwidth=2).grid(column=0, row=1, padx=(100,0), pady=(0,20))
+
+main()
