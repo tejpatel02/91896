@@ -1,0 +1,372 @@
+# Author: Tej Patel
+# Date: 15/08/2024
+# Purpose: The purpose of this program is to provide Julie with a program where she can keep track of the details of the customers who have hired from her Party Hire Store.
+
+# Import the libraries required.
+from tkinter import *
+import tkinter as tk
+from tkinter import ttk
+import random
+import tkinter.font as tkFont
+from tkinter import messagebox
+import os
+
+# Create the main window.
+main_window = tk.Tk()
+# Name the main window.
+main_window.title("Julie's Party Hire")
+# Make each row of an equal size to make the layout look better and easier to manage.
+main_window.columnconfigure(0, minsize=150)
+main_window.columnconfigure(1, minsize=150)
+main_window.columnconfigure(2, minsize=150)
+main_window.columnconfigure(3, minsize=150)
+
+# Set a blue-themed background color.
+main_window.configure(bg='#e6f2ff')
+
+# Create a main function which will be called to start the code.
+def main():
+    # Create empty variables which will be used later and also make them global so they can be used anywhere in the program.
+    global counters, customer_details, used_receipt_numbers
+    used_receipt_numbers = set()
+    counters = {'total_entries': 0, 'name_count': 0}
+    customer_details = []
+
+    # Call in functions to set up the GUI.
+    labels()
+    load_details()
+    print_entries()
+    entries()
+    buttons()
+    main_window.mainloop()
+
+# Create a function to create the entry boxes.
+def entries():
+    # Make the variabes global so that they can be used anywhere in the program.
+    global entry_name, item_hired, entry_item_number, row_return, items
+
+    # Create a variable for font to be able to assign the font to a entry box easily.
+    font = tkFont.Font(family="Times New Roman", size=14)
+
+    # Create a entry box for customer name and then place in the correct spot using .grid.
+    entry_name = Entry(main_window, width=17, font=font, bd=2, bg='#cce0ff')
+    entry_name.grid(column=1, row=0, pady=15)
+
+    # Create a list with all the possible items the user can hire.
+    items = ['Balloons', 'Tables', 'Chairs', 'Lighting', 'Bouncy Castle', 'Speaker', 'Plates', 'Cutlery']
+    # Create a Combobox for item hired and then place in the correct spot using .grid.
+    item_hired = ttk.Combobox(main_window, width=16, font=font, values=items, state="readonly")
+    item_hired.grid(column=1, row=1, pady=15)
+    
+    # Apply styling to the Combobox.
+    style = ttk.Style()
+    style.configure('TCombobox', font=font, background='#cce0ff', foreground='black')
+
+    # Create a entry box for no. of items hired and then place in the correct spot using .grid.
+    entry_item_number = Spinbox(main_window, width=17, font=font, bd=2, from_=0, to=500, bg='#cce0ff')
+    entry_item_number.grid(column=1, row=2, pady=15)
+
+    # Create a entry box for return row and then place in the correct spot using .grid.
+    row_return = Entry(main_window, width=17, font=font, bd=2, bg='#cce0ff')
+    row_return.grid(column=3, row=2, pady=15)
+
+# Create a function with all the buttons.
+def buttons():
+    # Create buttons for save details, print entries, quit and return row.
+    # Place these buttons in the correct place using .grid.
+    Button(main_window, text="Save Details", command=validation, width=15, borderwidth=2, bg='#99ccff', font=("Times New Roman", 12)).place(x=520, y=10)
+    Button(main_window, text="Print Entries", command=print_entries, width=15, borderwidth=2, bg='#99ccff', font=("Times New Roman", 12)).place(x=520, y=50)
+    Button(main_window, text="Quit", command=close_program, width=15, borderwidth=2, bg='#99ccff', font=("Times New Roman", 12)).place(x=670, y=10)
+    Button(main_window, text="Return Row", command=return_row_validation, width=15, borderwidth=2, bg='#99ccff', font=("Times New Roman", 12)).place(x=520, y=90)
+
+# Create a function for my labels which display above the printed entries.
+def printed_labels():
+    # Make the variabkes global so that they can be used anywhere in the program.
+    global name_label, receipt_label, item_label, number_label
+    
+    # Create label for name and place it in the correct spot using .grid.
+    name_label = Label(main_window, bg='#e6f2ff')
+    name_label.grid(column=2, row=11, sticky=N)
+
+    # Create label for receipt number and place it in the correct spot using .grid.
+    receipt_label = Label(main_window, bg='#e6f2ff')
+    receipt_label.grid(column=3, row=11, sticky=N)
+
+    # Create label for item hired and place it in the correct spot using .grid.
+    item_label = Label(main_window, bg='#e6f2ff')
+    item_label.grid(column=4, row=11, sticky=N)
+
+     # Create label for number of items hired and place it in the correct spot using .grid.
+    number_label = Label(main_window, bg='#e6f2ff')
+    number_label.grid(column=5, row=11, sticky=N)
+
+# Create a function to create labels to go next to my entry boxes.
+def labels():
+    # Create labels for customer name, item hired, number of item hired, row number to return.
+    # Place these labels in the correct place using .grid.
+    Label(main_window, text="Customer Name:", font=("Times New Roman", 15), bg='#e6f2ff').grid(column=0, row=0, pady=15)
+    Label(main_window, text="Item Hired:", font=("Times New Roman", 15), bg='#e6f2ff').grid(column=0, row=1, pady=15)
+    Label(main_window, text="No. of Item Hired:", font=("Times New Roman", 15), bg='#e6f2ff').grid(column=0, row=2, pady=15)
+    Label(main_window, text="Row No. To Return", font=("Times New Roman", 15), bg='#e6f2ff').grid(column=2, row=2, padx=(50, 10))
+
+# Create a function to load previous saved entries.
+def load_details():
+    # Check if the file "user.txt" exists.
+    if os.path.exists("user.txt"):
+        # Open the file in read mode.
+        with open("user.txt", "r") as file:
+            while True:
+                # Read the first line for the name and remove any surrounding blank space.
+                name_txt = file.readline().strip()
+                # If the name is an empty string then break the loop.
+                if not name_txt:
+                    break
+                # Read each line for each entry and remove any surrounding blank space.
+                item_hired_txt = file.readline().strip()
+                random_number_txt = file.readline().strip()
+                entry_item_number_txt = file.readline().strip()
+
+                # Check if all fields are not left blank.
+                if item_hired_txt and random_number_txt and entry_item_number_txt:
+                    # Append the entry details as a list to the customer_details list.
+                    customer_details.append([random_number_txt, name_txt, item_hired_txt, entry_item_number_txt])
+                    # Increase total entries count by one.
+                    counters['total_entries'] += 1
+                    # Add the used receipt numbers to the variable.
+                    used_receipt_numbers.add(random_number_txt)
+
+# Create a function which will check each entry and make sure it is not invalid.
+def validation():
+
+    # Create a variable to keep track of any invalid entries.
+    validation_counter = 0
+
+    # Check if the customer name entry is left blank.
+    if entry_name.get() == "":
+        # If it is blank let the user know using messagebox error.
+        messagebox.showerror("Invalid Input", "Customer Name cannot be left blank")
+        # Add one to the variable counter because entry was left blank, therefore invalid.
+        validation_counter += 1
+
+    # Check if the customer name entered is greater than 20 characters.
+    elif len(entry_name.get()) > 20:
+        # If it is greater than 20 characters let the user know using messagebox error.
+        messagebox.showerror("Invalid Input", "Customer Name cannot exceed 20 characters")
+        # Add one to the validation counter because entry was more than 20 characters, therefore invalid.
+        validation_counter += 1
+
+    # Check if the customer name entry is contains non letters, while excluding blank spaces and hyphens because these are commonly found in full names.
+    elif not entry_name.get().replace(" ","").replace("-", "").isalpha():
+        # If it does contain non letters, let the user know using messagebox error.
+        messagebox.showerror("Invalid Input", "Customer Name must be only contain letters")
+        # Add one to the validation counter because full name contained non letters, therefore invalid.
+        validation_counter += 1
+
+    # Check if the item hired entry is left blank.
+    elif item_hired.get() == "":
+        # If it is blank let the user know using messagebox error.
+        messagebox.showerror("Invalid Input", "Item Hired cannot be left blank")
+        # Add one to the variable counter because entry was left blank, therefore invalid.
+        validation_counter += 1
+        
+    # Check if the item hired entry is not part of the list of items.
+    elif not item_hired.get() in items:
+        # If the item entered is not in the list, let the user know using messagebox error.
+        messagebox.showerror("Invalid Input", "Item Hired must be selected from the list")
+        # Add one to the validation counter because the item entered is not on the list, therefore invalid. 
+        validation_counter += 1
+
+    # Check if the number of items hired entry is left blank.
+    elif entry_item_number.get() == "":
+        # If it is blank let the user know using messagebox error.
+        messagebox.showerror("Invalid Input", "No. of Items Hired cannot be left blank")
+        # Add one to the variable counter because entry was left blank, therefore invalid.
+        validation_counter += 1
+
+    # Check if the number of items hired entry is not a digit, while ignoring any negative symbols.
+    elif not entry_item_number.get().lstrip("-").isdigit():
+        # If the number of items hired is not a digit, let the user know using messagebox error.
+        messagebox.showerror("Invalid Input", "No. of Items Hired must be a digit")
+        # Add one to the valiation counter because entry was not a digit, therefore invalid.
+        validation_counter += 1
+
+    # Check if the number of items hired entry is below or equal to 0.
+    elif int(entry_item_number.get()) <= 0:
+        # If it is equal to or less than 0, let the user know using messagebox error.
+        messagebox.showerror("Invalid Input", "No. of Items Hired must be greater than 0")
+        # Add one to the validation counter because the user cannot hire 0 or less items, therefore invalid. 
+        validation_counter += 1
+
+    # Check if the number of items hired entry is greater than 500.
+    elif int(entry_item_number.get()) > 500:
+        # If it is greater than 500, let the user know using messagebox error.
+        messagebox.showerror("Invalid Input", "No. of Items Hired must be less than or equal to 500")
+        # Add one to the validation counter because the user cannot hire more than 500 items, therefore invalid. 
+        validation_counter += 1
+
+    # If the validation counter equals 0, then save the details.
+    if validation_counter == 0:
+        # Call the save details function to save details.
+        save_details()
+
+# Function to print entry values on the GUI.
+def print_entries():
+    # Create a font variable to use in the labels.
+    font = tkFont.Font(family="Times New Roman", size=11)
+
+    # Create a variable to keep track of customer entries.
+    name_count = 0
+    # Create labels to display the saved customer details and place them in the correct place using .grid.
+    Label(main_window, font=("Times New Roman", 15), text="Row", bg='#e6f2ff').grid(column=0, row=4)
+    Label(main_window, font=("Times New Roman", 15), text="Receipt Number", bg='#e6f2ff').grid(column=1, row=4)
+    Label(main_window, font=("Times New Roman", 15), text="Customer Name", bg='#e6f2ff').grid(column=2, row=4)
+    Label(main_window, font=("Times New Roman", 15), text="Item Hired", bg='#e6f2ff').grid(column=3, row=4)
+    Label(main_window, font=("Times New Roman", 15), text="No. of Item Hired", bg='#e6f2ff').grid(column=4, row=4)
+    
+    # Add separator line for clarity.
+    separator = ttk.Separator(main_window, orient="horizontal")
+    separator.grid(column=0, row=5, columnspan=5, sticky="ew", pady=10)
+
+    # Create a loop to ensure all customer entries are displayed.
+    while name_count < counters['total_entries']:
+        # Display the customer details and place them in the correct place using .grid.
+        Label(main_window, font=font, text=name_count, bg='#e6f2ff').grid(column=0, row=name_count+6)
+        Label(main_window, font=font, text=(customer_details[name_count][0]), bg='#e6f2ff').grid(column=1, row=name_count+6)
+        Label(main_window, font=font, text=(customer_details[name_count][1]), bg='#e6f2ff').grid(column=2, row=name_count+6)
+        Label(main_window, font=font, text=(customer_details[name_count][2]), bg='#e6f2ff').grid(column=3, row=name_count+6)
+        Label(main_window, font=font, text=(customer_details[name_count][3]), bg='#e6f2ff').grid(column=4, row=name_count+6)
+        # Increase the value of the variable "name_count" because one set of customer details has been printed.
+        name_count += 1
+
+
+# Create a function to save the users details to the txt file.
+def save_details():
+    # Make the 'random_number' variable global so that it can be used anywhere in the program.
+    global random_number
+    # Generate a random number between 100000 and 999999 and the save this name in a variable after making sure it is unique.
+    while True:
+        random_number = random.randint(100000, 999999)
+        if random_number not in used_receipt_numbers:
+            break
+    # Get whatever is in each entry box and save it to a variable.
+    name_txt = entry_name.get()
+    item_hired_txt = item_hired.get()
+    random_number_txt = str(random_number)
+    entry_item_number_txt = str(entry_item_number.get())
+
+    # Open the file name "user.txt".
+    with open("user.txt", "a") as file:
+        # Write the user's details into the file.
+        file.write(f"{name_txt}\n")
+        file.write(f"{item_hired_txt}\n")
+        file.write(f"{random_number_txt}\n")
+        file.write(f"{entry_item_number_txt}\n")
+
+    # Let the user know that their details were sucessfully saved using messagebox.
+    messagebox.showinfo("Details Saved", "Your details were successfully saved")
+
+    # Save the customers details to a variable.
+    customer_details.append([random_number_txt, name_txt, item_hired_txt, entry_item_number_txt])
+    used_receipt_numbers.add(random_number_txt)
+
+    # Clear the entry boxes.
+    entry_name.delete(0, 'end')
+    item_hired.set('')
+    entry_item_number.delete(0, 'end')
+    
+    # Increase the variable by one to keep track of the total entries made. 
+    counters['total_entries'] += 1
+
+# Create a function which ensures only valid entries can be made to the return row entry box.
+def return_row_validation():
+    # Create a variable to keep track of any invalid entries.
+    return_row_validation_counter = 0
+
+    # Check if the return row entry box is left blank.
+    if row_return.get() == "":
+        # If it is left blank let the user know using messagebox error.
+        messagebox.showerror("Invalid Input", "Row No. to delete cannot be left blank")
+        # Add one to the return row validation counter because the entry box was left blank, therefore invalid.
+        return_row_validation_counter += 1
+
+    # Check if the return row entry box is not a digit.
+    elif not row_return.get().isdigit():
+        # If it is not a digit let the user know using messagebox error.
+        messagebox.showerror("Invalid Input", "Row No. to delete must be a digit")
+        # Add one to the return row validation counter because return row enteres was not a digit, therefore invalid.
+        return_row_validation_counter += 1
+
+    # Check if the return row entry box entry box is not greater than the total number of entries.
+    elif int(row_return.get()) >= counters['total_entries']:
+        # If it is then let the user know using messagebox error.
+        messagebox.showerror("Invalid Input", "Row No. to delete is out of range")
+        # Add one to the return row validation counter because the row wanted to be deleted didn't exist, therefore invalid.
+        return_row_validation_counter += 1
+
+    # Check if the return row validation counter equals 0.
+    if return_row_validation_counter == 0:
+        # If it does then return the row by running the return row function.
+        return_row()
+
+# Create a function to return customer's details.
+def return_row():
+    # Get the row number to delete from the entry box.
+    row_index = int(row_return.get())
+    
+    # Delete the row from the customer_details list.
+    del customer_details[row_index]
+    
+    # Update the total entries count by decreasing it by one.
+    counters['total_entries'] -= 1
+    
+    # Clear the return row entry box.
+    row_return.delete(0, 'end')
+    
+    # Clear the row which has been returned by covering it with blank space.
+    for i in range(counters['total_entries'] + 1):
+        Label(main_window, text=" " * 50, bg='#e6f2ff').grid(column=0, row=i + 6)
+        Label(main_window, text=" " * 50, bg='#e6f2ff').grid(column=1, row=i + 6)
+        Label(main_window, text=" " * 50, bg='#e6f2ff').grid(column=2, row=i + 6)
+        Label(main_window, text=" " * 50, bg='#e6f2ff').grid(column=3, row=i + 6)
+        Label(main_window, text=" " * 50, bg='#e6f2ff').grid(column=4, row=i + 6)
+    
+    # Reprint all the items in the list.
+    print_entries()
+
+    # Rewrite the file without the deleted entry.
+    with open("user.txt", "w") as file:
+        for detail in customer_details:
+            file.write(f"{detail[1]}\n")
+            file.write(f"{detail[2]}\n")
+            file.write(f"{detail[0]}\n")
+            file.write(f"{detail[3]}\n")
+
+    # Use messagebox to let the use know that their item was returned.
+    messagebox.showinfo("Item Returned", "Your item was successfully returned")
+
+
+# Create a function to ask the user if they would like to quit the program.
+def close_program():
+    
+    # Create a function to end the program.
+    def end_program():
+        # Close the window which asks the user if they are sure they would like to quit the program.
+        close_program_window.destroy()
+        # Close the main window.
+        main_window.destroy()
+
+    # Create a new window. 
+    close_program_window = tk.Tk()
+    # Name the window.
+    close_program_window.title("Quit Program")
+    # Assign a background colour to the window.
+    close_program_window.configure(bg='#e6f2ff')
+    # Ask the user if they are sure they would like to close the program.
+    Label(close_program_window, text="Are you sure you would like to end this program?", bg='#e6f2ff').grid(column=0, row=0, padx=40, pady=(20,10))
+    # Create a button for 'yes' and if pressed close all windows, ending the program.
+    Button(close_program_window, text="Yes", command=end_program, width=10, borderwidth=2, bg='#99ccff', font=("Times New Roman", 12)).grid(column=0, row=1, padx=(0,100), pady=(0,20))
+    # Create a button for 'no' and if pressed close the window the button is on, causing the program to still run.
+    Button(close_program_window, text="No", command=close_program_window.destroy, width=10, borderwidth=2, bg='#99ccff', font=("Times New Roman", 12)).grid(column=0, row=1, padx=(100,0), pady=(0,20))
+
+# Call the main function to start the code. 
+main()
