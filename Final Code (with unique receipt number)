@@ -239,19 +239,20 @@ def print_entries():
         name_count += 1
 
 
-# Create a function to save the users details to the txt file.
+# Function to save the users details to the txt file.
 def save_details():
     # Make the 'random_number' variable global so that it can be used anywhere in the program.
     global random_number
-    # Generate a random number between 100000 and 999999 and the save this name in a variable after making sure it is unique.
+    # Generate a random number between 100000 and 999999 and save this in a variable after making sure it is unique.
     while True:
         random_number = random.randint(100000, 999999)
-        if random_number not in used_receipt_numbers:
+        random_number_txt = str(random_number)
+        if random_number_txt not in used_receipt_numbers:
             break
+    
     # Get whatever is in each entry box and save it to a variable.
     name_txt = entry_name.get()
     item_hired_txt = item_hired.get()
-    random_number_txt = str(random_number)
     entry_item_number_txt = str(entry_item_number.get())
 
     # Open the file name "user.txt".
@@ -262,10 +263,10 @@ def save_details():
         file.write(f"{random_number_txt}\n")
         file.write(f"{entry_item_number_txt}\n")
 
-    # Let the user know that their details were sucessfully saved using messagebox.
+    # Let the user know that their details were successfully saved using messagebox.
     messagebox.showinfo("Details Saved", "Your details were successfully saved")
 
-    # Save the customers details to a variable.
+    # Save the customer's details to a variable.
     customer_details.append([random_number_txt, name_txt, item_hired_txt, entry_item_number_txt])
     used_receipt_numbers.add(random_number_txt)
 
@@ -273,8 +274,8 @@ def save_details():
     entry_name.delete(0, 'end')
     item_hired.set('')
     entry_item_number.delete(0, 'end')
-    
-    # Increase the variable by one to keep track of the total entries made. 
+
+    # Increase the variable by one to keep track of the total entries made.
     counters['total_entries'] += 1
 
 # Create a function which ensures only valid entries can be made to the return row entry box.
